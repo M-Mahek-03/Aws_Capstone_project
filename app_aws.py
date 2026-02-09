@@ -23,7 +23,7 @@ image_table = dynamodb.Table('Images')
 user_image_table = dynamodb.Table('UserImages')
 
 # SNS Topic ARN
-SNS_TOPIC_ARN = 'arn:aws:sns:us-east-1:739275439341:PixelPerfectionNotifications' 
+SNS_TOPIC_ARN = 'arn:aws:sns:us-east-1:140023398756:PixelPerfectionNotifications' 
 
 # File Upload Config
 UPLOAD_FOLDER = 'static/uploads'
