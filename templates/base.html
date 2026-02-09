@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Pixel Perfection{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Realistic Heart Animation Intro -->
+    <div id="heart-intro">
+        <div class="heart-container">
+            <!-- Realistic Beating Heart -->
+            <div class="realistic-heart">
+                <svg viewBox="0 0 32 29.6" class="heart-svg">
+                    <defs>
+                        <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ff0066;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#ff00ff;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#cc00ff;stop-opacity:1" />
+                        </linearGradient>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <path fill="url(#heartGradient)" filter="url(#glow)" d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4c0,9.4,9.5,11.9,16,21.2
+                    c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"/>
+                </svg>
+                <!-- Heart particles -->
+                <div class="heart-particles">
+                    <span class="particle"></span>
+                    <span class="particle"></span>
+                    <span class="particle"></span>
+                    <span class="particle"></span>
+                    <span class="particle"></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Logo Reveal -->
+        <div class="logo-reveal">
+            <h1 class="logo-text">PIXEL PERFECTION</h1>
+            <p class="logo-tagline">Image Management Reimagined</p>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <header>
+            <h1>✨ PIXEL PERFECTION ✨</h1>
+            <nav>
+                <a href="{{ url_for('index') }}">Home</a>
+                {% if session.get('username') %}
+                    <a href="{{ url_for('home') }}">Dashboard</a>
+                    <a href="{{ url_for('projects_list') }}">Gallery</a>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                {% elif session.get('admin') %}
+                    <a href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a>
+                    <a href="{{ url_for('admin_logout') }}">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Login</a>
+                    <a href="{{ url_for('signup') }}">Signup</a>
+                    <a href="{{ url_for('admin_login') }}">Admin</a>
+                {% endif %}
+            </nav>
+        </header>
+        
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

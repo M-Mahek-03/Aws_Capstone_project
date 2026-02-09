@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Projects - Pixel Perfection{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Available Projects</h2>
+</div>
+
+<div class="gallery-controls">
+    <input type="text" class="search-box" placeholder="🔍 Search projects...">
+</div>
+
+{% if projects %}
+<div class="gallery-grid">
+    {% for project in projects %}
+    <div class="gallery-card">
+        {% if project.image %}
+        <img src="{{ url_for('static', filename='uploads/' + project.image) }}" alt="{{ project.title }}">
+        {% else %}
+        <img src="https://via.placeholder.com/400x250/8b00ff/ffffff?text={{ project.title }}" alt="{{ project.title }}">
+        {% endif %}
+        <div class="gallery-card-content">
+            <h3>{{ project.title }}</h3>
+            <p><strong>Problem:</strong> {{ project.problem_statement[:80] }}...</p>
+            <p><strong>Solution:</strong> {{ project.solution_overview[:80] }}...</p>
+        </div>
+        <div class="card-footer">
+            {% if project.id in user_enrollments %}
+            <button class="btn btn-success btn-sm" disabled>✓ Enrolled</button>
+            {% else %}
+            <a href="{{ url_for('enroll', project_id=project.id) }}" class="btn btn-primary btn-sm">
+                Enroll Now
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="hero">
+    <h1>No Projects Available</h1>
+    <p>Check back later for new projects!</p>
+</div>
+{% endif %}
+{% endblock %}

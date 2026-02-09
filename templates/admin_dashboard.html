@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Pixel Perfection{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h2>Admin Control Center</h2>
+    <p>Welcome, {{ username }}! Manage users and images</p>
+</div>
+
+<!-- Admin Stats -->
+<div class="admin-stats">
+    <div class="stat-card">
+        <h3>{{ users|length }}</h3>
+        <p>Total Users</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ projects|length }}</h3>
+        <p>Total Images</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ enrollments|length }}</h3>
+        <p>Active Users</p>
+    </div>
+    <div class="stat-card">
+        <h3 id="newUploads">{{ projects|length if projects|length < 10 else 10 }}</h3>
+        <p>New Uploads</p>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="gallery-controls">
+    <input type="text" class="search-box" id="adminSearch" placeholder="🔍 Search users or images...">
+    <select class="filter-select" id="adminFilter">
+        <option value="all">All Items</option>
+        <option value="users">Users Only</option>
+        <option value="images">Images Only</option>
+    </select>
+</div>
+
+<!-- Users Section -->
+<div class="admin-section" id="usersSection">
+    <div class="page-header">
+        <h2>User Management</h2>
+        <span class="badge-count">{{ users|length }} users</span>
+    </div>
+
+    {% if users %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Images Uploaded</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user, password in users.items() %}
+                <tr class="user-row" data-type="user" data-name="{{ user }}">
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar">{{ user[0].upper() }}</div>
+                            <span>{{ user }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if enrollments.get(user) %}
+                        <span class="badge-success">{{ enrollments.get(user)|length }} images</span>
+                        {% else %}
+                        <span class="badge-muted">0 images</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge active">Active</span>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-sm" onclick="viewUserDetails('{{ user }}')">👁️ View</button>
+                        <button class="action-btn btn-sm" onclick="blockUser('{{ user }}')">🚫 Block</button>
+                        <button class="action-btn danger btn-sm" onclick="deleteUser('{{ user }}')">🗑️ Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state-small">
+        <p>No users registered yet</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Images Section -->
+<div class="admin-section" id="imagesSection">
+    <div class="page-header">
+        <h2>Image Management</h2>
+        <span class="badge-count">{{ projects|length }} images</span>
+    </div>
+
+    {% if projects %}
+    <div class="gallery-grid">
+        {% for project in projects %}
+        <div class="gallery-card admin-image-card" data-type="image" data-name="{{ project.title }}">
+            {% if project.image %}
+            <img src="{{ url_for('static', filename='uploads/' + project.image) }}" alt="{{ project.title }}" class="gallery-image">
+            {% else %}
+            <img src="https://via.placeholder.com/400x300/8b00ff/ffffff?text={{ project.title }}" alt="{{ project.title }}" class="gallery-image">
+            {% endif %}
+            <div class="admin-image-overlay">
+                <div class="image-info">
+                    <h4>{{ project.title }}</h4>
+                    <p>📅 Uploaded today</p>
+                    <p>👤 User: Unknown</p>
+                </div>
+                <div class="admin-actions">
+                    <button class="overlay-btn" onclick="viewImageDetails('{{ project.id }}')">👁️ View</button>
+                    <button class="overlay-btn" onclick="downloadImageAdmin('{{ project.image }}')">⬇️ Download</button>
+                    <button class="overlay-btn danger" onclick="deleteImageAdmin('{{ project.id }}')">🗑️ Delete</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state-small">
+        <p>No images uploaded yet</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Image Details Modal -->
+<div id="imageDetailsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('imageDetailsModal')">&times;</span>
+        <h2>Image Details</h2>
+        <div id="imageDetailsContent">
+            <div class="detail-row">
+                <span class="detail-label">Image ID:</span>
+                <span class="detail-value" id="detailId">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Title:</span>
+                <span class="detail-value" id="detailTitle">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Uploaded By:</span>
+                <span class="detail-value" id="detailUser">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Upload Date:</span>
+                <span class="detail-value" id="detailDate">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">File Size:</span>
+                <span class="detail-value" id="detailSize">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Dimensions:</span>
+                <span class="detail-value" id="detailDimensions">-</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Details Modal -->
+<div id="userDetailsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('userDetailsModal')">&times;</span>
+        <h2>User Details</h2>
+        <div id="userDetailsContent">
+            <div class="detail-row">
+                <span class="detail-label">Username:</span>
+                <span class="detail-value" id="userDetailName">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Total Images:</span>
+                <span class="detail-value" id="userDetailImages">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Join Date:</span>
+                <span class="detail-value" id="userDetailDate">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value" id="userDetailStatus">Active</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Last Active:</span>
+                <span class="detail-value" id="userDetailActive">Today</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Search Functionality
+document.getElementById('adminSearch').addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const userRows = document.querySelectorAll('.user-row');
+    const imageCards = document.querySelectorAll('.admin-image-card');
+    
+    userRows.forEach(row => {
+        const name = row.dataset.name.toLowerCase();
+        row.style.display = name.includes(searchTerm) ? '' : 'none';
+    });
+    
+    imageCards.forEach(card => {
+        const name = card.dataset.name.toLowerCase();
+        card.style.display = name.includes(searchTerm) ? '' : 'none';
+    });
+});
+
+// Filter Functionality
+document.getElementById('adminFilter').addEventListener('change', (e) => {
+    const filter = e.target.value;
+    const usersSection = document.getElementById('usersSection');
+    const imagesSection = document.getElementById('imagesSection');
+    
+    if (filter === 'users') {
+        usersSection.style.display = 'block';
+        imagesSection.style.display = 'none';
+    } else if (filter === 'images') {
+        usersSection.style.display = 'none';
+        imagesSection.style.display = 'block';
+    } else {
+        usersSection.style.display = 'block';
+        imagesSection.style.display = 'block';
+    }
+});
+
+// User Actions
+function viewUserDetails(username) {
+    document.getElementById('userDetailName').textContent = username;
+    document.getElementById('userDetailImages').textContent = Math.floor(Math.random() * 20) + ' images';
+    document.getElementById('userDetailDate').textContent = 'February 2026';
+    document.getElementById('userDetailsModal').style.display = 'block';
+}
+
+function blockUser(username) {
+    if (confirm(`Block user ${username}? They won't be able to upload or access their images.`)) {
+        showNotification(`User ${username} has been blocked! 🚫`, 'success');
+    }
+}
+
+function deleteUser(username) {
+    if (confirm(`Delete user ${username}? This will remove all their images and data permanently.`)) {
+        showNotification(`User ${username} has been deleted! 🗑️`, 'success');
+        setTimeout(() => location.reload(), 1500);
+    }
+}
+
+// Image Actions
+function viewImageDetails(id) {
+    document.getElementById('detailId').textContent = id;
+    document.getElementById('detailTitle').textContent = 'Sample Image';
+    document.getElementById('detailUser').textContent = 'Unknown User';
+    document.getElementById('detailDate').textContent = new Date().toLocaleDateString();
+    document.getElementById('detailSize').textContent = '2.5 MB';
+    document.getElementById('detailDimensions').textContent = '1920x1080';
+    document.getElementById('imageDetailsModal').style.display = 'block';
+}
+
+function downloadImageAdmin(imagePath) {
+    showNotification('Download started! ⬇️', 'success');
+}
+
+function deleteImageAdmin(id) {
+    if (confirm('Delete this image? This action cannot be undone.')) {
+        showNotification('Image deleted! 🗑️', 'success');
+        setTimeout(() => location.reload(), 1500);
+    }
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// Close modals on outside click
+window.onclick = (e) => {
+    if (e.target.classList.contains('modal')) {
+        e.target.style.display = 'none';
+    }
+};
+</script>
+
+<style>
+.admin-section {
+    margin: 3rem 0;
+}
+
+.badge-count {
+    background: rgba(139, 0, 255, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    color: var(--neon-pink);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-purple), var(--neon-pink));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.badge-success {
+    background: rgba(0, 255, 0, 0.2);
+    color: #00ff00;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.85rem;
+}
+
+.badge-muted {
+    background: rgba(128, 128, 128, 0.2);
+    color: var(--text-muted);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.85rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background: rgba(0, 255, 0, 0.2);
+    color: #00ff00;
+}
+
+.admin-image-card {
+    position: relative;
+}
+
+.admin-image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 0, 21, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 15px;
+}
+
+.admin-image-card:hover .admin-image-overlay {
+    opacity: 1;
+}
+
+.image-info h4 {
+    color: var(--neon-pink);
+    margin-bottom: 0.5rem;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.image-info p {
+    color: var(--neon-blue);
+    font-size: 0.85rem;
+    margin: 0.25rem 0;
+}
+
+.admin-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.empty-state-small {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(26, 0, 51, 0.4);
+    border-radius: 15px;
+    border: 2px dashed var(--secondary-purple);
+    color: var(--text-muted);
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(139, 0, 255, 0.2);
+}
+
+.detail-label {
+    color: var(--neon-blue);
+    font-weight: 600;
+}
+
+.detail-value {
+    color: var(--text-light);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}About - Pixel Perfection{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>About Pixel Perfection</h1>
+    <p>Where Technology Meets Cyberpunk Aesthetics</p>
+</div>
+
+<div style="max-width: 900px; margin: 0 auto;">
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-body">
+            <h3 class="card-title">Our Vision</h3>
+            <p>Pixel Perfection is a cutting-edge project management platform that combines powerful functionality with stunning cyberpunk-inspired design. We believe that software should not only be functional but also visually captivating and enjoyable to use.</p>
+        </div>
+    </div>
+    
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-body">
+            <h3 class="card-title">What We Offer</h3>
+            <p>Our platform provides a comprehensive solution for managing projects with features including:</p>
+            <ul style="margin-top: 1rem; padding-left: 2rem; color: var(--text-light);">
+                <li>User-friendly project browsing and enrollment</li>
+                <li>Secure authentication and session management</li>
+                <li>Powerful admin dashboard for platform management</li>
+                <li>Dynamic search and filtering capabilities</li>
+                <li>Responsive design for all devices</li>
+                <li>Customizable cyberpunk themes</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-body">
+            <h3 class="card-title">Technology Stack</h3>
+            <p>Built with modern web technologies:</p>
+            <ul style="margin-top: 1rem; padding-left: 2rem; color: var(--text-light);">
+                <li><strong style="color: var(--neon-pink);">Backend:</strong> Python Flask</li>
+                <li><strong style="color: var(--neon-pink);">Frontend:</strong> HTML5, CSS3, JavaScript</li>
+                <li><strong style="color: var(--neon-pink);">Design:</strong> Custom Cyberpunk Theme</li>
+                <li><strong style="color: var(--neon-pink);">Animations:</strong> CSS Keyframes & JavaScript</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <h3 class="card-title">Get In Touch</h3>
+            <p>Have questions or feedback? We'd love to hear from you!</p>
+            <div style="margin-top: 1rem;">
+                <p style="color: var(--neon-blue);">📧 Email: contact@pixelperfection.io</p>
+                <p style="color: var(--neon-blue);">🌐 Web: www.pixelperfection.io</p>
+                <p style="color: var(--neon-blue);">💬 Support: Available 24/7</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="hero" style="margin-top: 3rem;">
+    <h2>Join Us Today!</h2>
+    <p>Experience the future of project management</p>
+    <a href="{{ url_for('signup') }}" class="btn btn-primary">Get Started</a>
+</div>
+{% endblock %}

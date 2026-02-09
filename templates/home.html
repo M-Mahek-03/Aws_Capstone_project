@@ -1,0 +1,635 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Pixel Perfection{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h2>Welcome, {{ username }}!</h2>
+    <p>Your Image Gallery & Management Hub</p>
+</div>
+
+<!-- Image Stats -->
+<div class="admin-stats">
+    <div class="stat-card">
+        <h3>{{ my_projects|length }}</h3>
+        <p>Total Images</p>
+    </div>
+    <div class="stat-card">
+        <h3 id="storageUsed">0 MB</h3>
+        <p>Storage Used</p>
+    </div>
+    <div class="stat-card">
+        <h3 id="recentUploads">0</h3>
+        <p>Recent Uploads</p>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="image-actions">
+    <button class="action-btn-large" onclick="openUploadModal()">
+        <span class="icon">📤</span>
+        <span>Upload Image</span>
+    </button>
+    <button class="action-btn-large" onclick="openGenerateModal()">
+        <span class="icon">✨</span>
+        <span>Generate Image</span>
+    </button>
+    <button class="action-btn-large" onclick="openCropModal()">
+        <span class="icon">✂️</span>
+        <span>Crop Image</span>
+    </button>
+</div>
+
+<!-- Gallery Controls -->
+<div class="gallery-controls">
+    <input type="text" class="search-box" id="imageSearch" placeholder="🔍 Search your images...">
+    <select class="filter-select" id="sortFilter">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+        <option value="name">Name (A-Z)</option>
+    </select>
+</div>
+
+<!-- Image Gallery -->
+{% if my_projects %}
+<div class="gallery-grid" id="imageGallery">
+    {% for project in my_projects %}
+    <div class="gallery-card image-card" data-name="{{ project.title }}" data-date="{{ loop.index }}">
+        {% if project.image %}
+        <img src="{{ url_for('static', filename='uploads/' + project.image) }}" alt="{{ project.title }}" class="gallery-image">
+        {% else %}
+        <img src="https://via.placeholder.com/400x300/8b00ff/ffffff?text={{ project.title }}" alt="{{ project.title }}" class="gallery-image">
+        {% endif %}
+        <div class="image-overlay">
+            <button class="overlay-btn" onclick="viewImage('{{ project.image }}', '{{ project.title }}')">👁️ View</button>
+            <button class="overlay-btn" onclick="editImage('{{ project.id }}')">✏️ Edit</button>
+            <button class="overlay-btn" onclick="cropImage('{{ project.image }}')">✂️ Crop</button>
+            <button class="overlay-btn danger" onclick="deleteImage('{{ project.id }}')">🗑️ Delete</button>
+        </div>
+        <div class="gallery-card-content">
+            <h3>{{ project.title }}</h3>
+            <p class="image-meta">
+                <span>📅 Uploaded today</span>
+                {% if project.document %}
+                <span>📎 Has attachment</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="hero empty-state">
+    <div class="empty-icon">🖼️</div>
+    <h1>No Images Yet</h1>
+    <p>Start by uploading, generating, or cropping your first image!</p>
+    <button class="btn btn-primary" onclick="openUploadModal()">Upload Your First Image</button>
+</div>
+{% endif %}
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('uploadModal')">&times;</span>
+        <h2>Upload Image</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📤</div>
+                <p>Drag & drop your image here</p>
+                <p class="upload-subtext">or click to browse</p>
+                <input type="file" id="imageFile" accept="image/*" style="display: none;">
+            </div>
+            <div id="imagePreviewContainer" style="display: none;">
+                <img id="imagePreview" style="max-width: 100%; border-radius: 10px; margin: 1rem 0;">
+            </div>
+            <div class="form-group">
+                <label for="imageName">Image Name</label>
+                <input type="text" id="imageName" class="form-control" placeholder="Enter image name" required>
+            </div>
+            <div class="form-group">
+                <label for="imageDescription">Description (Optional)</label>
+                <textarea id="imageDescription" class="form-control" rows="3" placeholder="Add a description"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Upload Image</button>
+        </form>
+    </div>
+</div>
+
+<!-- Generate Modal -->
+<div id="generateModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('generateModal')">&times;</span>
+        <h2>Generate Image</h2>
+        <form id="generateForm">
+            <div class="form-group">
+                <label for="generatePrompt">Image Prompt</label>
+                <textarea id="generatePrompt" class="form-control" rows="4" placeholder="Describe the image you want to generate..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="generateStyle">Style</label>
+                <select id="generateStyle" class="form-control">
+                    <option value="realistic">Realistic</option>
+                    <option value="artistic">Artistic</option>
+                    <option value="abstract">Abstract</option>
+                    <option value="cyberpunk">Cyberpunk</option>
+                    <option value="anime">Anime</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="generateSize">Size</label>
+                <select id="generateSize" class="form-control">
+                    <option value="512x512">Square (512x512)</option>
+                    <option value="1024x1024">Large Square (1024x1024)</option>
+                    <option value="1024x768">Landscape (1024x768)</option>
+                    <option value="768x1024">Portrait (768x1024)</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Generate Image</button>
+        </form>
+        <div id="generatedImageContainer" style="display: none; margin-top: 1rem;">
+            <img id="generatedImage" style="max-width: 100%; border-radius: 10px;">
+            <button class="btn btn-success w-100" style="margin-top: 1rem;" onclick="saveGeneratedImage()">Save to Gallery</button>
+        </div>
+    </div>
+</div>
+
+<!-- Crop Modal -->
+<div id="cropModal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+        <span class="close" onclick="closeModal('cropModal')">&times;</span>
+        <h2>Crop Image</h2>
+        <div class="form-group">
+            <label>Select Image to Crop</label>
+            <select id="cropImageSelect" class="form-control">
+                <option value="">Choose an image...</option>
+                {% for project in my_projects %}
+                {% if project.image %}
+                <option value="{{ project.image }}">{{ project.title }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div id="cropContainer" style="display: none;">
+            <div class="crop-wrapper">
+                <img id="cropImage" style="max-width: 100%;">
+            </div>
+            <div class="crop-controls">
+                <button class="btn btn-secondary btn-sm" onclick="rotateCrop(-90)">↶ Rotate Left</button>
+                <button class="btn btn-secondary btn-sm" onclick="rotateCrop(90)">↷ Rotate Right</button>
+                <button class="btn btn-secondary btn-sm" onclick="flipCrop('horizontal')">↔️ Flip H</button>
+                <button class="btn btn-secondary btn-sm" onclick="flipCrop('vertical')">↕️ Flip V</button>
+                <button class="btn btn-primary" onclick="applyCrop()">Apply Crop</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Image Modal -->
+<div id="viewModal" class="modal">
+    <div class="modal-content" style="max-width: 900px;">
+        <span class="close" onclick="closeModal('viewModal')">&times;</span>
+        <h2 id="viewImageTitle">Image Title</h2>
+        <img id="viewImageSrc" style="max-width: 100%; border-radius: 10px;">
+        <div style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: center;">
+            <button class="btn btn-primary" onclick="downloadImage()">⬇️ Download</button>
+            <button class="btn btn-secondary" onclick="shareImage()">🔗 Share</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+<script>
+let cropper = null;
+let currentViewImage = '';
+
+// Upload Modal Functions
+function openUploadModal() {
+    document.getElementById('uploadModal').style.display = 'block';
+}
+
+function openGenerateModal() {
+    document.getElementById('generateModal').style.display = 'block';
+}
+
+function openCropModal() {
+    document.getElementById('cropModal').style.display = 'block';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+}
+
+// Upload Area Drag & Drop
+const uploadArea = document.getElementById('uploadArea');
+const imageFile = document.getElementById('imageFile');
+
+uploadArea.addEventListener('click', () => imageFile.click());
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = 'var(--neon-pink)';
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.style.borderColor = 'var(--secondary-purple)';
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = 'var(--secondary-purple)';
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        imageFile.files = files;
+        previewUploadImage(files[0]);
+    }
+});
+
+imageFile.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        previewUploadImage(e.target.files[0]);
+    }
+});
+
+function previewUploadImage(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('imagePreview').src = e.target.result;
+        document.getElementById('imagePreviewContainer').style.display = 'block';
+        document.getElementById('imageName').value = file.name.split('.')[0];
+    };
+    reader.readAsDataURL(file);
+}
+
+// Upload Form Submit
+document.getElementById('uploadForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    showNotification('Image uploaded successfully! 🎉', 'success');
+    setTimeout(() => {
+        closeModal('uploadModal');
+        location.reload();
+    }, 1500);
+});
+
+// Generate Form Submit
+document.getElementById('generateForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const prompt = document.getElementById('generatePrompt').value;
+    const style = document.getElementById('generateStyle').value;
+    const size = document.getElementById('generateSize').value;
+    
+    showNotification('Generating image... ✨', 'success');
+    
+    // Simulate AI generation with placeholder
+    setTimeout(() => {
+        const [width, height] = size.split('x');
+        const placeholderUrl = `https://via.placeholder.com/${width}x${height}/8b00ff/ffffff?text=${encodeURIComponent(prompt.substring(0, 20))}`;
+        document.getElementById('generatedImage').src = placeholderUrl;
+        document.getElementById('generatedImageContainer').style.display = 'block';
+        showNotification('Image generated! 🎨', 'success');
+    }, 2000);
+});
+
+function saveGeneratedImage() {
+    showNotification('Image saved to gallery! 💾', 'success');
+    setTimeout(() => {
+        closeModal('generateModal');
+        location.reload();
+    }, 1500);
+}
+
+// Crop Functions
+document.getElementById('cropImageSelect').addEventListener('change', (e) => {
+    const imagePath = e.target.value;
+    if (imagePath) {
+        const cropImage = document.getElementById('cropImage');
+        cropImage.src = "{{ url_for('static', filename='uploads/') }}" + imagePath;
+        document.getElementById('cropContainer').style.display = 'block';
+        
+        if (cropper) {
+            cropper.destroy();
+        }
+        
+        cropper = new Cropper(cropImage, {
+            aspectRatio: NaN,
+            viewMode: 1,
+            autoCropArea: 1,
+        });
+    }
+});
+
+function rotateCrop(degree) {
+    if (cropper) {
+        cropper.rotate(degree);
+    }
+}
+
+function flipCrop(direction) {
+    if (cropper) {
+        if (direction === 'horizontal') {
+            cropper.scaleX(-cropper.getData().scaleX || -1);
+        } else {
+            cropper.scaleY(-cropper.getData().scaleY || -1);
+        }
+    }
+}
+
+function applyCrop() {
+    if (cropper) {
+        showNotification('Image cropped successfully! ✂️', 'success');
+        setTimeout(() => {
+            closeModal('cropModal');
+            location.reload();
+        }, 1500);
+    }
+}
+
+// Image Actions
+function viewImage(imagePath, title) {
+    currentViewImage = imagePath;
+    document.getElementById('viewImageTitle').textContent = title;
+    document.getElementById('viewImageSrc').src = "{{ url_for('static', filename='uploads/') }}" + imagePath;
+    document.getElementById('viewModal').style.display = 'block';
+}
+
+function editImage(id) {
+    showNotification('Edit feature coming soon! ✏️', 'success');
+}
+
+function cropImage(imagePath) {
+    openCropModal();
+    document.getElementById('cropImageSelect').value = imagePath;
+    document.getElementById('cropImageSelect').dispatchEvent(new Event('change'));
+}
+
+function deleteImage(id) {
+    if (confirm('Are you sure you want to delete this image?')) {
+        showNotification('Image deleted! 🗑️', 'success');
+        setTimeout(() => location.reload(), 1500);
+    }
+}
+
+function downloadImage() {
+    const link = document.createElement('a');
+    link.href = document.getElementById('viewImageSrc').src;
+    link.download = currentViewImage;
+    link.click();
+    showNotification('Download started! ⬇️', 'success');
+}
+
+function shareImage() {
+    const url = document.getElementById('viewImageSrc').src;
+    if (navigator.share) {
+        navigator.share({
+            title: document.getElementById('viewImageTitle').textContent,
+            url: url
+        });
+    } else {
+        navigator.clipboard.writeText(url);
+        showNotification('Link copied to clipboard! 🔗', 'success');
+    }
+}
+
+// Search and Filter
+document.getElementById('imageSearch').addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.image-card');
+    
+    cards.forEach(card => {
+        const name = card.dataset.name.toLowerCase();
+        card.style.display = name.includes(searchTerm) ? '' : 'none';
+    });
+});
+
+document.getElementById('sortFilter').addEventListener('change', (e) => {
+    const sortBy = e.target.value;
+    const gallery = document.getElementById('imageGallery');
+    const cards = Array.from(document.querySelectorAll('.image-card'));
+    
+    cards.sort((a, b) => {
+        if (sortBy === 'newest') {
+            return b.dataset.date - a.dataset.date;
+        } else if (sortBy === 'oldest') {
+            return a.dataset.date - b.dataset.date;
+        } else {
+            return a.dataset.name.localeCompare(b.dataset.name);
+        }
+    });
+    
+    cards.forEach(card => gallery.appendChild(card));
+});
+
+// Close modals on outside click
+window.onclick = (e) => {
+    if (e.target.classList.contains('modal')) {
+        e.target.style.display = 'none';
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+    }
+};
+</script>
+
+<style>
+.image-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.action-btn-large {
+    background: rgba(26, 0, 51, 0.6);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--secondary-purple);
+    border-radius: 15px;
+    padding: 2rem;
+    color: var(--text-light);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.action-btn-large .icon {
+    font-size: 3rem;
+}
+
+.action-btn-large:hover {
+    transform: translateY(-5px);
+    border-color: var(--neon-pink);
+    box-shadow: 0 10px 30px rgba(255, 0, 255, 0.5);
+}
+
+.image-card {
+    position: relative;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 0, 21, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    padding: 1rem;
+    border-radius: 15px;
+}
+
+.image-card:hover .image-overlay {
+    opacity: 1;
+}
+
+.overlay-btn {
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, var(--primary-purple), var(--neon-pink));
+    color: var(--text-glow);
+    border: none;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 80%;
+}
+
+.overlay-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px var(--neon-pink);
+}
+
+.overlay-btn.danger {
+    background: linear-gradient(135deg, #ff0000, #ff00ff);
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: rgba(26, 0, 51, 0.95);
+    backdrop-filter: blur(15px);
+    margin: 5% auto;
+    padding: 2rem;
+    border: 2px solid var(--primary-purple);
+    border-radius: 20px;
+    max-width: 600px;
+    box-shadow: 0 8px 32px rgba(139, 0, 255, 0.6);
+    position: relative;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.close {
+    color: var(--neon-pink);
+    float: right;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close:hover {
+    color: var(--neon-blue);
+}
+
+.upload-area {
+    border: 3px dashed var(--secondary-purple);
+    border-radius: 15px;
+    padding: 3rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.upload-area:hover {
+    border-color: var(--neon-purple);
+    background: rgba(139, 0, 255, 0.1);
+}
+
+.upload-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.upload-subtext {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.filter-select {
+    padding: 1rem;
+    background: rgba(10, 0, 21, 0.8);
+    border: 2px solid var(--secondary-purple);
+    border-radius: 10px;
+    color: var(--text-light);
+    font-size: 1rem;
+    font-family: 'Rajdhani', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 15px rgba(139, 0, 255, 0.5);
+}
+
+.image-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--neon-blue);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+}
+
+.crop-wrapper {
+    margin: 1rem 0;
+    max-height: 400px;
+    overflow: hidden;
+}
+
+.crop-controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 1rem;
+}
+</style>
+{% endblock %}

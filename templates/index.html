@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Pixel Perfection{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>PIXEL PERFECTION</h1>
+    <p>AI-Powered Image Generation, Upload & Management Platform</p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+        <a href="{{ url_for('signup') }}" class="btn btn-primary">Get Started Free</a>
+        <a href="{{ url_for('login') }}" class="btn btn-secondary">Login</a>
+    </div>
+</div>
+
+<div class="admin-stats">
+    <div class="stat-card">
+        <h3>🎨</h3>
+        <p>AI Generation</p>
+    </div>
+    <div class="stat-card">
+        <h3>📤</h3>
+        <p>Cloud Upload</p>
+    </div>
+    <div class="stat-card">
+        <h3>✂️</h3>
+        <p>Smart Cropping</p>
+    </div>
+    <div class="stat-card">
+        <h3>☁️</h3>
+        <p>AWS Powered</p>
+    </div>
+</div>
+
+<div style="margin-top: 3rem;">
+    <h2 style="text-align: center; color: var(--neon-pink); font-family: 'Orbitron', sans-serif; margin-bottom: 2rem;">
+        Powerful Features
+    </h2>
+    
+    <div class="gallery-grid">
+        <div class="card feature-card-enhanced">
+            <div class="feature-icon">✨</div>
+            <div class="card-body">
+                <h3 class="card-title">AI Image Generation</h3>
+                <p>Generate stunning images from text prompts using advanced AI. Choose from multiple styles including realistic, artistic, abstract, cyberpunk, and anime.</p>
+                <ul class="feature-list">
+                    <li>Multiple art styles</li>
+                    <li>Custom dimensions</li>
+                    <li>Instant generation</li>
+                    <li>High quality output</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card feature-card-enhanced">
+            <div class="feature-icon">📤</div>
+            <div class="card-body">
+                <h3 class="card-title">Cloud Upload to AWS S3</h3>
+                <p>Upload your images securely to AWS S3 with drag-and-drop support. All images are stored safely in the cloud with automatic backups.</p>
+                <ul class="feature-list">
+                    <li>Drag & drop interface</li>
+                    <li>Secure AWS S3 storage</li>
+                    <li>Automatic backups</li>
+                    <li>Fast CDN delivery</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card feature-card-enhanced">
+            <div class="feature-icon">✂️</div>
+            <div class="card-body">
+                <h3 class="card-title">Advanced Image Cropping</h3>
+                <p>Professional cropping tools with rotate, flip, and aspect ratio controls. Perfect your images with precision editing capabilities.</p>
+                <ul class="feature-list">
+                    <li>Rotate & flip tools</li>
+                    <li>Custom aspect ratios</li>
+                    <li>Real-time preview</li>
+                    <li>Non-destructive editing</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card feature-card-enhanced">
+            <div class="feature-icon">📊</div>
+            <div class="card-body">
+                <h3 class="card-title">Dynamic Dashboard</h3>
+                <p>Track your images with real-time statistics. View upload history, storage usage, and manage your entire gallery from one place.</p>
+                <ul class="feature-list">
+                    <li>Real-time stats</li>
+                    <li>Storage tracking</li>
+                    <li>Upload history</li>
+                    <li>Quick actions</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card feature-card-enhanced">
+            <div class="feature-icon">🔍</div>
+            <div class="card-body">
+                <h3 class="card-title">Smart Search & Filter</h3>
+                <p>Find any image instantly with powerful search and filtering. Sort by date, name, or custom criteria to organize your gallery.</p>
+                <ul class="feature-list">
+                    <li>Instant search</li>
+                    <li>Multiple filters</li>
+                    <li>Sort options</li>
+                    <li>Tag support</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card feature-card-enhanced">
+            <div class="feature-icon">🔔</div>
+            <div class="card-body">
+                <h3 class="card-title">Real-time Notifications</h3>
+                <p>Get instant notifications via AWS SNS for uploads, edits, and important events. Stay updated on all your image activities.</p>
+                <ul class="feature-list">
+                    <li>Email notifications</li>
+                    <li>Upload alerts</li>
+                    <li>Edit confirmations</li>
+                    <li>AWS SNS powered</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card feature-card-enhanced">
+            <div class="feature-icon">👑</div>
+            <div class="card-body">
+                <h3 class="card-title">Admin Control Panel</h3>
+                <p>Comprehensive admin dashboard to manage users, images, and platform statistics. Full control over your image management platform.</p>
+                <ul class="feature-list">
+                    <li>User management</li>
+                    <li>Image moderation</li>
+                    <li>Analytics dashboard</li>
+                    <li>Bulk operations</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card feature-card-enhanced">
+            <div class="feature-icon">🗄️</div>
+            <div class="card-body">
+                <h3 class="card-title">DynamoDB Metadata</h3>
+                <p>All image metadata stored in AWS DynamoDB for lightning-fast queries. Track filenames, users, timestamps, and custom attributes.</p>
+                <ul class="feature-list">
+                    <li>Fast queries</li>
+                    <li>Scalable storage</li>
+                    <li>Custom metadata</li>
+                    <li>AWS powered</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card feature-card-enhanced">
+            <div class="feature-icon">🎭</div>
+            <div class="card-body">
+                <h3 class="card-title">Cyberpunk UI/UX</h3>
+                <p>Stunning purple-themed futuristic interface with neon effects, smooth animations, and responsive design that works on all devices.</p>
+                <ul class="feature-list">
+                    <li>Neon aesthetics</li>
+                    <li>Smooth animations</li>
+                    <li>Fully responsive</li>
+                    <li>Theme variants</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="hero" style="margin-top: 3rem;">
+    <h2>AWS Cloud Integration</h2>
+    <p>Built on enterprise-grade AWS infrastructure</p>
+    <div class="aws-services">
+        <div class="aws-badge">
+            <span class="aws-icon">☁️</span>
+            <span>EC2</span>
+        </div>
+        <div class="aws-badge">
+            <span class="aws-icon">📦</span>
+            <span>S3</span>
+        </div>
+        <div class="aws-badge">
+            <span class="aws-icon">🗄️</span>
+            <span>DynamoDB</span>
+        </div>
+        <div class="aws-badge">
+            <span class="aws-icon">🔔</span>
+            <span>SNS</span>
+        </div>
+        <div class="aws-badge">
+            <span class="aws-icon">🔐</span>
+            <span>IAM</span>
+        </div>
+    </div>
+</div>
+
+<div class="hero" style="margin-top: 3rem;">
+    <h2>Ready to Transform Your Images?</h2>
+    <p>Join thousands of users managing their images with Pixel Perfection</p>
+    <a href="{{ url_for('signup') }}" class="btn btn-primary" style="font-size: 1.2rem; padding: 1.2rem 2.5rem;">
+        Start Creating Now →
+    </a>
+</div>
+
+<style>
+.feature-card-enhanced {
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-icon {
+    font-size: 4rem;
+    text-align: center;
+    margin: 1rem 0;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+}
+
+.feature-list li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    color: var(--text-light);
+}
+
+.feature-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--neon-pink);
+    font-weight: bold;
+}
+
+.aws-services {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+.aws-badge {
+    background: rgba(26, 0, 51, 0.6);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--secondary-purple);
+    border-radius: 15px;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.aws-badge:hover {
+    transform: translateY(-5px);
+    border-color: var(--neon-pink);
+    box-shadow: 0 10px 30px rgba(255, 0, 255, 0.5);
+}
+
+.aws-icon {
+    font-size: 1.5rem;
+}
+</style>
+{% endblock %}
